@@ -5,7 +5,7 @@ var mongo = require("droopy-mongo"),
 	q = require("q"),
 	dao;
 
-var MovieService = function (url) {
+var MovieService = function(url) {
 	url = url || config.mongo.url;
 	dao = new mongo.MongoDao(url);
 	this.dao = dao;
@@ -13,7 +13,7 @@ var MovieService = function (url) {
 
 var transaction = function(func) {
 	var deferred = q.defer();
-	dao.getCollection("movies").then(function(movies){
+	dao.getCollection("movies").then(function(movies) {
 		func(movies, deferred);
 	}, function() {
 		console.log("Error retrieving movies collection.");
@@ -36,7 +36,9 @@ var sortBy = function(page, size, sortObject) {
 
 var query = function(queryObject, sort, displayed, size) {
 	var options = {
-		sort: sort || { addedToDb: -1 },
+		sort: sort || {
+			addedToDb: -1
+		},
 		skip: displayed || 0,
 		limit: size || 20
 	};
@@ -46,9 +48,9 @@ var query = function(queryObject, sort, displayed, size) {
 
 var _find = function(mongoQuery, Model) {
 	return transaction(function(movies, deferred) {
-		movies.find(mongoQuery).then(function(results){
+		movies.find(mongoQuery).then(function(results) {
 			if (Model) {
-				deferred.resolve(results.map(function(result){
+				deferred.resolve(results.map(function(result) {
 					return new Model(result);
 				}));
 			} else {
@@ -58,11 +60,19 @@ var _find = function(mongoQuery, Model) {
 	});
 };
 
-MovieService.prototype.getById = function(id) {
-	return	transaction(function (movies, deferred) {
-		movies.findOne({ id: id }).then(function(result){
+
+
+MovieService.prototype.findOne = function(query) {
+	return transaction(function(movies, deferred) {
+		movies.findOne(query).then(function(result) {
 			deferred.resolve(models.FullMovie.create(result));
 		});
+	});
+};
+
+MovieService.prototype.getById = function(id) {
+	return this.findOne({
+		id: id
 	});
 };
 
@@ -81,12 +91,18 @@ MovieService.prototype.insert = function(movie) {
 
 MovieService.prototype.toggleWatched = function(movieId, watched) {
 	return transaction(function(movies, deferred) {
-		movies._collection.update({ id: movieId },{ $set: {watched: watched }}, function() {});
+		movies._collection.update({
+			id: movieId
+		}, {
+			$set: {
+				watched: watched
+			}
+		}, function() {});
 	});
 };
 
 MovieService.prototype.query = function(queryObject, sort, displayed, size) {
-	return query(queryObject, sort, displayed, size );
+	return query(queryObject, sort, displayed, size);
 };
 
 MovieService.prototype.search = function(search) {
@@ -101,19 +117,36 @@ MovieService.prototype.search = function(search) {
 };
 
 MovieService.prototype.filmography = function(actorId) {
-	var queryObj = { "casts.cast.id": actorId };
-	var sort = { "release_date": -1 };
+	var queryObj = {
+		"casts.cast.id": actorId
+	};
+	var sort = {
+		"release_date": -1
+	};
 	return query(queryObj, sort, 0, 2000);
 };
 
 MovieService.prototype.genres = function() {
-	return	transaction(function (movies, deferred) {
-		movies._collection.aggregate([
-			{ $project: { genres: 1, title: 1 } },
-			{ $unwind: "$genres"},
-			{ $group: { _id: "$genres.name", count: { $sum: 1} }},
-			{ $sort: { count: -1 }}
-		], function(error, genres){
+	return transaction(function(movies, deferred) {
+		movies._collection.aggregate([{
+			$project: {
+				genres: 1,
+				title: 1
+			}
+		}, {
+			$unwind: "$genres"
+		}, {
+			$group: {
+				_id: "$genres.name",
+				count: {
+					$sum: 1
+				}
+			}
+		}, {
+			$sort: {
+				count: -1
+			}
+		}], function(error, genres) {
 			if (error) {
 				console.log(error);
 				throw error;
@@ -123,26 +156,63 @@ MovieService.prototype.genres = function() {
 	});
 };
 
-MovieService.prototype.favorites = function () {
-	var query = { 'tags.favorited': { $ne: null } };
-	var options = { sort: {'tags.favorited': -1 } };
+MovieService.prototype.favorites = function() {
+	var query = {
+		'tags.favorited': {
+			$ne: null
+		}
+	};
+	var options = {
+		sort: {
+			'tags.favorited': -1
+		}
+	};
 	var fields = models.ThinMovie.fields;
 	return _find(new mongo.MongoQuery(query, fields, options), models.ThinMovie);
 };
 
-MovieService.prototype.queue = function () {
-	var query = { 'tags.queued': { $ne: null } };
-	var options = { sort: {'tags.queued': -1 } };
+MovieService.prototype.queue = function() {
+	var query = {
+		'tags.queued': {
+			$ne: null
+		}
+	};
+	var options = {
+		sort: {
+			'tags.queued': -1
+		}
+	};
 	var fields = models.ThinMovie.fields;
 	return _find(new mongo.MongoQuery(query, fields, options), models.ThinMovie);
 };
 
-MovieService.prototype.setTag = function (movieId, tag, value) {
+MovieService.prototype.update = function(movieId, updateObj) {
+	return transaction(function(movies, deferred) {
+		var update = {
+			$set: updateObj
+		};
+		movies._collection.update({
+			id: movieId
+		}, updateObj, function(err) {
+			if (err) {
+				deferred.reject(err);
+			} else {
+				deferred.resolve();
+			}
+		});
+	});
+};
+
+MovieService.prototype.setTag = function(movieId, tag, value) {
 	return transaction(function(movies, deferred) {
 		var key = 'tags.' + tag;
-		var updateObj = { $set: {} };
+		var updateObj = {
+			$set: {}
+		};
 		updateObj.$set[key] = value;
-		movies._collection.update({ id: movieId }, updateObj, function() {});
+		movies._collection.update({
+			id: movieId
+		}, updateObj, function() {});
 	});
 };
 
