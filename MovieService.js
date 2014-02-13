@@ -7,7 +7,7 @@ var mongo = require("droopy-mongo"),
 
 var MovieService = function (url) {
 	url = url || config.mongo.url;
-	dao = new mongo.MongoDao(config.mongo.url);
+	dao = new mongo.MongoDao(url);
 	this.dao = dao;
 };
 
