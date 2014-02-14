@@ -186,10 +186,10 @@ MovieService.prototype.queue = function() {
 	return _find(new mongo.MongoQuery(query, fields, options), models.ThinMovie);
 };
 
-MovieService.prototype.update = function(movieId, updateObj) {
+MovieService.prototype.update = function(movieId, update) {
 	return transaction(function(movies, deferred) {
-		var update = {
-			$set: updateObj
+		var updateObj = {
+			$set: update
 		};
 		movies._collection.update({
 			id: movieId
