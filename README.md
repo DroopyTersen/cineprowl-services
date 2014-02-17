@@ -1,2 +1,2 @@
-cineprowl-services
+cineprowl-services layer
 ==================
