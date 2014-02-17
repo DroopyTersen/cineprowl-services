@@ -1,2 +1,0 @@
-D:\home\site\wwwroot\mobile
-CineProwl started on port 80
