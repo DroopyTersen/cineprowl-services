@@ -4,7 +4,7 @@
   "description": "CineProwl service layer",
   "author": "Andrew Petersen",
   "dependencies": {
-    "droopy-mongo": "~0.0.0",
+    "droopy-mongo": "~0.1.0",
     "q": "~1.0.0"
   }
 }
