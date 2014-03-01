@@ -1,9 +1,10 @@
 "use strict";
 var mongo = require("droopy-mongo"),
 	config = require('./config'),
-	models = require("../models"),
+	models = require("./models"),
 	q = require("q"),
 	dao;
+
 
 var MovieService = function(url) {
 	url = url || config.mongo.url;
@@ -63,8 +64,25 @@ MovieService.prototype.query = function(queryObject, sort, displayed, size) {
 
 //WRITE ACTIONS
 MovieService.prototype.insert = function(movie) {
-	movie.addedToDb = new Date();
-	return this.movies.insert(movie);
+	var self = this;
+	return this.checkIfExists({
+		id: movie.id
+	})
+		.then(function(exists) {
+			if (!exists) {
+				movie.addedToDb = new Date();
+				return self.movies.insert(movie)
+					.then(function(movies){
+						return movies.length ? movies[0] : null;
+					});
+			} else {
+				throw new Error("Movie already exists");
+			}
+		});
+};
+
+MovieService.prototype.insertFromMovieDb = function(movie) {
+
 };
 
 MovieService.prototype.update = function(movieId, update) {
@@ -159,7 +177,9 @@ MovieService.prototype.search = function(search, limit) {
 };
 
 MovieService.prototype.searchMovies = function(search, limit) {
-	return this._query({ title: startsWithRegex(search)}, null, 0, 5);
+	return this._query({
+		title: startsWithRegex(search)
+	}, null, 0, 5);
 };
 MovieService.prototype.searchActors = function(search, limit) {
 	var aggregateActions = [{
@@ -182,8 +202,7 @@ MovieService.prototype.searchActors = function(search, limit) {
 				$sum: 1
 			},
 		}
-	}, 
-	{
+	}, {
 		$match: {
 			"_id.name": startsWithRegex(search)
 		}
@@ -191,8 +210,7 @@ MovieService.prototype.searchActors = function(search, limit) {
 		$sort: {
 			count: -1
 		}
-	},  
-	{
+	}, {
 		$limit: limit || 5
 	}];
 
