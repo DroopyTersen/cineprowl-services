@@ -5,6 +5,8 @@
   "author": "Andrew Petersen",
   "dependencies": {
     "droopy-mongo": "~0.1.0",
-    "q": "~1.0.0"
-  }
+    "q": "~1.0.0",
+    "cineprowl-models": "droopytersen/cineprowl-models"
+  },
+  "main": "/.index"
 }
