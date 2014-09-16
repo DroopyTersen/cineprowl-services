@@ -1,7 +1,7 @@
 "use strict";
 var mongo = require("droopy-mongo"),
 	config = require('./config'),
-	models = require("cineprowl-models"),
+	models = require("CineProwl-Models"),
 	q = require("q"),
 	dao;
 
