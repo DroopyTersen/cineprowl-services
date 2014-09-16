@@ -3,6 +3,7 @@ var mongo = require("droopy-mongo"),
 	config = require('./config'),
 	models = require("CineProwl-Models"),
 	q = require("q"),
+	aggregates = require("./movieservice/aggregates"),
 	dao;
 
 
@@ -124,27 +125,7 @@ MovieService.prototype.filmography = function(actorId) {
 };
 
 MovieService.prototype.genres = function() {
-	var aggregateActions = [{
-		$project: {
-			genres: 1,
-			title: 1
-		}
-	}, {
-		$unwind: "$genres"
-	}, {
-		$group: {
-			_id: "$genres.name",
-			count: {
-				$sum: 1
-			}
-		}
-	}, {
-		$sort: {
-			count: -1
-		}
-	}];
-
-	return this.movies.aggregate(aggregateActions);
+	return this.movies.aggregate(aggregates.genres());
 };
 
 var startsWithRegex = function(search) {
@@ -154,7 +135,6 @@ var startsWithRegex = function(search) {
 		"$options": "i"
 	};
 };
-
 
 MovieService.prototype.search = function(search, limit) {
 	var self = this;
@@ -183,69 +163,13 @@ MovieService.prototype.searchMovies = function(search, limit) {
 };
 
 MovieService.prototype.searchActors = function(search, limit) {
-	var aggregateActions = [{
-		$project: {
-			'casts.cast.name': 1,
-			'casts.cast.id': 1,
-			'casts.cast.profile_path': 1,
-			title: 1
-		}
-	}, {
-		$unwind: "$casts.cast"
-	}, {
-		$group: {
-			_id: {
-				id: "$casts.cast.id",
-				name: "$casts.cast.name",
-				profile_path: "$casts.cast.profile_path"
-			},
-			count: {
-				$sum: 1
-			},
-		}
-	}, {
-		$match: {
-			"_id.name": startsWithRegex(search)
-		}
-	}, {
-		$sort: {
-			count: -1
-		}
-	}, {
-		$limit: limit || 5
-	}];
+	var aggregateActions = aggregates.searchActors(search, limit);
 
 	return this.movies.aggregate(aggregateActions);
 };
 
 MovieService.prototype.actors = function(count) {
-	var aggregateActions = [{
-		$project: {
-			'casts.cast.name': 1,
-			'casts.cast.id': 1,
-			'casts.cast.profile_path': 1,
-			title: 1
-		}
-	}, {
-		$unwind: "$casts.cast"
-	}, {
-		$group: {
-			_id: {
-				id: "$casts.cast.id",
-				name: "$casts.cast.name",
-				profile_path: "$casts.cast.profile_path"
-			},
-			count: {
-				$sum: 1
-			},
-		}
-	}, {
-		$sort: {
-			count: -1
-		}
-	}, {
-		$limit: count || 200
-	}];
+	var aggregateActions = aggregates.actors(count);
 
 	return this.movies.aggregate(aggregateActions);
 };
