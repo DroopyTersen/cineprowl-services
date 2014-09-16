@@ -181,6 +181,7 @@ MovieService.prototype.searchMovies = function(search, limit) {
 		title: startsWithRegex(search)
 	}, null, 0, 5);
 };
+
 MovieService.prototype.searchActors = function(search, limit) {
 	var aggregateActions = [{
 		$project: {
@@ -216,7 +217,6 @@ MovieService.prototype.searchActors = function(search, limit) {
 
 	return this.movies.aggregate(aggregateActions);
 };
-
 
 MovieService.prototype.actors = function(count) {
 	var aggregateActions = [{
@@ -273,4 +273,24 @@ MovieService.prototype.queue = function() {
 	return this._tagsQuery("tags.queued");
 };
 
+MovieService.prototype.stats = function() {
+	//total movies
+	//total watched
+	//total unwatched
+	//watched/unwatched by genre
+	var query = { id : { $ne: null}};
+	return this.query(query, null, 0, 2000)
+		.then(function(allMovies){
+			var stats = {
+				count: allMovies.length
+			};
+			var unwatched = allMovies.filter(function(movie) {
+				return movie.watched === false;	
+			});
+			stats.unwatched = unwatched.length;
+			stats.watched = stats.count - stats.unwatched;
+			return stats;
+		});
+
+}
 module.exports = MovieService;
