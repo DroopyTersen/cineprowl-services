@@ -10,6 +10,41 @@ exports.genres = function() {
     return  [{
 		$project: {
 			genres: 1,
+			title: 1
+		}
+	}, {
+		$unwind: "$genres"
+	}, {
+		$group: {
+			_id: "$genres.name", 
+			count: {
+				$sum: 1
+			}
+		}
+	}, {
+		$sort: {
+			count: -1
+		}
+	}];
+};
+exports.years = function() {
+	return [{
+		$project: {
+				year: { $substr: ["$release_date", 0, 4]}
+			}
+		}, {
+		$group: {
+			_id: "$year",
+			count: { $sum: 1 }
+		}
+		}, {
+			$sort: { _id: -1 }
+	}];
+}
+exports.genreStats = function() {
+    return  [{
+		$project: {
+			genres: 1,
 			title: 1,
 			watched: 1
 		}
@@ -17,12 +52,12 @@ exports.genres = function() {
 		$unwind: "$genres"
 	}, {
 		$group: {
-			_id: "$genres.name",
+			_id: {
+				id: "$genres.name",
+				watched: "$watched"
+			},
 			count: {
 				$sum: 1
-			},
-			watched: {
-			    $sum: "$genres.watched" === true ? 1 : 0
 			}
 		}
 	}, {
