@@ -10,7 +10,8 @@ exports.genres = function() {
     return  [{
 		$project: {
 			genres: 1,
-			title: 1
+			title: 1,
+			watched: 1
 		}
 	}, {
 		$unwind: "$genres"
@@ -19,6 +20,9 @@ exports.genres = function() {
 			_id: "$genres.name",
 			count: {
 				$sum: 1
+			},
+			watched: {
+			    $sum: "$genres.watched" === true ? 1 : 0
 			}
 		}
 	}, {
