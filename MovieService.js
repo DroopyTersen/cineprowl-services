@@ -142,18 +142,19 @@ var startsWithRegex = function(search) {
 };
 
 MovieService.prototype.search = function(search, limit) {
+	limit = limit || 5;
 	var self = this;
 	var searchResults = {
 		movies: [],
 		people: []
 	};
 
-	return self.searchMovies(search, 5)
+	return self.searchMovies(search, limit)
 		.then(function(movieResults) {
 			console.log("movieResults");
 
 			searchResults.movies = movieResults;
-			return self.searchActors(search, 5);
+			return self.searchActors(search, limit);
 		})
 		.then(function(actorResults) {
 			searchResults.people = actorResults;
@@ -162,9 +163,10 @@ MovieService.prototype.search = function(search, limit) {
 };
 
 MovieService.prototype.searchMovies = function(search, limit) {
+	limit = limit || 5;
 	return this._query({
 		title: startsWithRegex(search)
-	}, null, 0, 5);
+	}, null, 0, limit);
 };
 
 MovieService.prototype.searchActors = function(search, limit) {
