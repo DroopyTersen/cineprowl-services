@@ -117,6 +117,9 @@ MovieService.prototype.toggleWatched = function(movieId, watched) {
 
 //HELPERS
 MovieService.prototype.filmography = function(actorId) {
+	if (typeof actorId === "string") {
+		actorId = parseInt(actorId, 10);
+	}
 	var queryObj = {
 		"casts.cast.id": actorId
 	};
