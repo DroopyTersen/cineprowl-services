@@ -4,9 +4,9 @@
   "description": "CineProwl service layer",
   "author": "Andrew Petersen",
   "dependencies": {
-    "droopy-mongo": "~0.1.0",
-    "q": "~1.0.0",
-    "cineprowl-models": "droopytersen/cineprowl-models"
+    "cineprowl-models": "droopytersen/cineprowl-models",
+    "droopy-mongo": "^1.0.3",
+    "q": "~1.0.0"
   },
   "main": "/.index"
 }
