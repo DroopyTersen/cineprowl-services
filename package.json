@@ -4,7 +4,7 @@
   "description": "CineProwl service layer",
   "author": "Andrew Petersen",
   "dependencies": {
-    "CineProwl-Models": "github:droopytersen/cineprowl-models",
+    "cineprowl-models": "github:droopytersen/cineprowl-models",
     "droopy-mongo": "^1.0.3",
     "q": "~1.0.0"
   },
